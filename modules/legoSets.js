@@ -146,6 +146,38 @@ const getAllThemes = async () => {
     return Promise.reject(err.message);
   }
 };
+function editSet (setNum, setData){
+  return new Promise((resolve, reject) => {
+    Set.update(setData, { where: { set_num: setNum } })
+      .then((result) => {
+        if (result[0] === 1) {
+          resolve();
+        } else {
+          reject(new Error('Unable to update the set. Set not found.'));
+        }
+      })
+      .catch((err) => {
+        reject(new Error(err.errors[0].message));
+      });
+  });
+}
+
+function deleteSet(set_num) {
+  return new Promise((resolve, reject) => {
+    Set.destroy({
+      where: {
+        set_num: set_num
+      }
+    })
+      .then(() => {
+        resolve();
+      })
+      .catch((err) => {
+        reject(err.errors[0].message);
+      });
+  });
+}
+
 
 // Export the initialize function and additional database functions
 module.exports = {
@@ -155,4 +187,6 @@ module.exports = {
  getSetsByTheme,
  addSet,
   getAllThemes,
+  editSet,
+  deleteSet,
 };

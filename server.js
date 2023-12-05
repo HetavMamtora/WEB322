@@ -1,3 +1,18 @@
+/********************************************************************************
+*  WEB322 – Assignment 05
+* 
+*  I declare that this assignment is my own work in accordance with Seneca's
+*  Academic Integrity Policy:
+* 
+*  https://www.senecacollege.ca/about/policies/academic-integrity-policy.html
+* 
+*  Name: _______Hetav Manojkumar Mamtora_______________ Student ID: _____172913212_________ Date: ____2023-12-01__________
+*
+*  Published URL: ___________________________________________________________
+*
+********************************************************************************/
+
+
 const express = require('express');
 const app = express();
 const legoData = require("./modules/legoSets");
@@ -100,4 +115,46 @@ app.get('/lego/addSet', async (req, res) => {
     // Handle errors, for example, render a 500 page with an error message
     res.status(500).render('500', { message: `Error: ${error.message}` });
   }
+});
+
+
+app.get('/lego/editSet/:num', (req, res) => {
+  const setNum = req.params.num;   
+  Promise.all([
+    legoData.getSetByNum(setNum),
+    legoData.getAllThemes()
+  ])
+    .then(([set, themeData]) => {
+      if (set && themeData) {
+        res.render("editSet", { themes: themeData, set: set });
+      } else {
+        res.status(404).render("404", { message: "I'm sorry, we're unable to find the requested set or themes" });
+      }
+    })
+    .catch((err) => {
+      res.status(404).render("404", { message: err });
+    });
+});
+
+app.post('/lego/editSet', (req, res) => {
+  const setNum = req.body.set_num;
+  const setData = req.body;   
+  legoData.editSet(setNum, setData)
+    .then(() => {
+      res.redirect('/lego/sets');
+    })
+    .catch((err) => {
+      res.render("500", { message: `I'm sorry, but we have encountered the following error: ${err}` });
+    });
+});
+
+app.get('/lego/deleteSet/:num', (req, res) => {
+  const setNum = req.params.num;  
+  legoData.deleteSet(setNum)
+    .then(() => {
+      res.redirect('/lego/sets');
+    })
+    .catch((error) => {
+      res.render('500', { message: `I'm sorry, but we have encountered the following error: ${error}` });
+    });
 });
