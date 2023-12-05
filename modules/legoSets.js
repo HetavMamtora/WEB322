@@ -120,10 +120,39 @@ function getSetsByTheme(theme) {
   });
 }
 
+
+// Function to add a new set
+const addSet = async (setData) => {
+  try {
+    // Create a new set using the Set model
+    await Set.create(setData);
+    // Resolve the Promise with no data upon successful creation
+    return Promise.resolve();
+  } catch (err) {
+    // Reject the Promise with a human-readable error message
+    return Promise.reject(err.errors[0].message);
+  }
+};
+
+// Function to get all themes
+const getAllThemes = async () => {
+  try {
+    // Use the Theme model to fetch all themes in the database
+    const themes = await Theme.findAll();
+    // Resolve the Promise with the themes
+    return Promise.resolve(themes);
+  } catch (err) {
+    // Reject the Promise with the error message
+    return Promise.reject(err.message);
+  }
+};
+
 // Export the initialize function and additional database functions
 module.exports = {
  initialize,
  getAllSets,
  getSetByNum,
  getSetsByTheme,
+ addSet,
+  getAllThemes,
 };

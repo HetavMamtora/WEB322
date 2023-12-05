@@ -74,3 +74,30 @@ app.get("/lego/sets/:num", async (req, res) => {
     });
   }
 });
+
+
+// New route to render the "Add Set" page
+app.get('/lego/addSet', async (req, res) => {
+  try {
+    // Fetch themes and render the "addSet" view
+    const themes = await legoData.getAllThemes();
+    res.render("addSet", { themes });
+  } catch (err) {
+    // If an error occurs, render the "500" view
+    res.render("500", { message: `Error fetching themes: ${err.message}` });
+  }
+});
+
+// New route to handle form submission and add a new set
+app.get('/lego/addSet', async (req, res) => {
+  try {
+    // Assuming you have an asynchronous function to get themes
+    const themes = await legoData.getAllThemes();
+
+    // Render the addSet view with the themes
+    res.render('addSet', { themes });
+  } catch (error) {
+    // Handle errors, for example, render a 500 page with an error message
+    res.status(500).render('500', { message: `Error: ${error.message}` });
+  }
+});

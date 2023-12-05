@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>500 Error</title>
+  <link rel="stylesheet" href="/css/main.css" />
+
+</head>
+
+<body tabindex="-1">
+  <%- include('partials/navbar', {page:''}) %>
+  <div class="container mx-auto">
+
+    <div class="hero bg-base-200 rounded-lg p-6">
+      <div class="hero-content text-center ">
+        <div class="max-w-md">
+          <h1 class="text-5xl font-bold">500 Error</h1>
+
+          <p class="py-6">"<%= message %>"</p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <br />
+    <div class="image-container">
+    <img
+          src="https://www.google.com/imgres?imgurl=https%3A%2F%2Fubiq.co%2Ftech-blog%2Fwp-content%2Fuploads%2F2020%2F08%2Fapache-500-internal-server-error.png&tbnid=GDcImScvjfG7cM&vet=12ahUKEwii_qG3gtaCAxWSA2IAHRNcCWIQMygJegUIARCCAQ..i&imgrefurl=https%3A%2F%2Fubiq.co%2Ftech-blog%2Ffix-500-internal-server-error-apache%2F&docid=93Kc3VU3XvlhYM&w=839&h=551&q=500%20error%20image&ved=2ahUKEwii_qG3gtaCAxWSA2IAHRNcCWIQMygJegUIARCCAQ"
+          alt="<%= message %>" />    
+        <a href="/" class="btn bg-red-600 text-white py-2 px-4 rounded-full mt-4 hover:bg-red-700">Go Back to Home</a>
+    </div>
+  
+</body>
+
+</html>
