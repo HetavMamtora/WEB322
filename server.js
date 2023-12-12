@@ -1,160 +1,222 @@
-/********************************************************************************
-*  WEB322 – Assignment 05
-* 
-*  I declare that this assignment is my own work in accordance with Seneca's
-*  Academic Integrity Policy:
-* 
-*  https://www.senecacollege.ca/about/policies/academic-integrity-policy.html
-* 
-*  Name: _______Hetav Manojkumar Mamtora_______________ Student ID: _____172913212_________ Date: ____2023-12-01__________
-*
-*  Published URL: __https://tan-hungry-barracuda.cyclic.app/_________________________________________________________
-*
-********************************************************************************/
 
-
+const authData = require('./modules/auth-service');
+const clientSessions = require('client-sessions');
+const legoData = require('./modules/legoSets');
+const path = require('path');
 const express = require('express');
 const app = express();
-const legoData = require("./modules/legoSets");
-const HTTP_PORT = process.env.PORT || 8080;
-
-// Serve static files from the 'public' directory
-app.use(express.static('public'));
-
-// Set the view engine to EJS
+const HTTP_PORT = 8080;
 app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.urlencoded({ extended: true }));
 
-// Initialize data and start the server
-legoData.initialize()
-  .then(() => {
-    app.listen(HTTP_PORT, () => {
-      console.log(`Server listening on port ${HTTP_PORT}`);
-    });
+app.use(
+  clientSessions({
+    cookieName: 'session', // this is the object name that will be added to 'req'
+    secret: 'o6LjQ5EVNC28ZgK64hDELM18ScpFQr', // this should be a long un-guessable string.
+    duration: 2 * 60 * 1000, // duration of the session in milliseconds (2 minutes)
+    activeDuration: 1000 * 60, // the session will be extended by this many ms each request (1 minute)
   })
-  .catch((err) => {
-    console.log("Unable to start server:", err);
-  });
+);
+app.use((req, res, next) => {
+  res.locals.errorMessage = null;
+  res.locals.successMessage = null;
+  res.locals.session = req.session;
+  next();
+});
 
-// Home route
+function ensureLogin(req, res, next) {
+  if (!req.session.user) {
+    res.redirect('/login');
+  } else {
+    next();
+  }
+}
+// app.get('/session-test-add', (req, res) => {
+//   req.session.message = req.query.message || ''; // add a "message" property to the session
+//   res.send("session created with using 'message' query parameter");
+// });
+// app.get('/session-test-read', (req, res) => {
+//   res.send(`session message: ${req.session.message}`); // read the "message" property from the session
+// });
 app.get('/', (req, res) => {
-  res.render("home");
+  res.render('home');
+});
+app.get('/login', (req, res) => {
+  res.render('login');
+});
+app.post('/login', (req, res) => {
+  req.body.userAgent = req.get('User-Agent');
+  authData
+    .checkUser(req.body)
+    .then((user) => {
+      req.session.user = {
+        userName: user.userName,
+        email: user.email,
+        loginHistory: [
+          {
+            dateTime: new Date().toLocaleString('en-US', {
+              weekday: 'short',
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+              hour: 'numeric',
+              minute: 'numeric',
+              second: 'numeric',
+              timeZoneName: 'short',
+            }),
+            userAgent: req.body.userAgent,
+          },
+        ],
+      };
+      res.redirect('/lego/sets');
+    })
+    .catch((err) => {
+      res.render('login', {
+        errorMessage: err,
+        userName: req.body.userName,
+      });
+    });
 });
 
-// About route
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+app.post("/register", (req, res) => {
+  authData
+    .registerUser(req.body)
+    .then(() => res.render("register", { successMessage: "User created" }))
+    .catch((err) =>
+      res.render("register", { errorMessage: err, userName: req.body.userName })
+    );
+});
+app.get('/logout', (req, res) => {
+  req.session.reset();
+  res.redirect('/');
+});
+app.get('/userHistory', ensureLogin, (req, res) => {
+  res.render('userHistory');
+});
 app.get('/about', (req, res) => {
-  res.render("about");
+  res.render('about');
 });
-
-// Lego sets route
-app.get("/lego/sets", async (req, res) => {
+app.get(
+  '/lego/addSet',
+  ensureLogin,
+  express.urlencoded({ extended: true }),
+  async (req, res) => {
+    try {
+      const themeData = await legoData.getAllThemes();
+      res.render('addSet', { themes: themeData });
+    } catch (err) {
+      res.render('500', { message: 'Database error' });
+    }
+  }
+);
+app.post(
+  '/lego/addSet',
+  ensureLogin,
+  express.urlencoded({ extended: true }),
+  async (req, res) => {
+    try {
+      await legoData.addSet(req.body);
+      res.redirect('/lego/sets');
+    } catch (err) {
+      res.render('500', {
+        message: `I'm sorry, but we have encountered the following error: ${err}`,
+      });
+    }
+  }
+);
+app.get(
+  '/lego/editSet/:num',
+  ensureLogin,
+  express.urlencoded({ extended: true }),
+  async (req, res) => {
+    try {
+      const setData = await legoData.getSetByNum(req.params.num);
+      const themeData = await legoData.getAllThemes();
+      res.render('editSet', { themes: themeData, set: setData });
+    } catch (err) {
+      res.status(404).render('404', { message: err });
+    }
+  }
+);
+app.post(
+  '/lego/editSet',
+  ensureLogin,
+  express.urlencoded({ extended: true }),
+  async (req, res) => {
+    console.log(req.body);
+    try {
+      await legoData.editSet(req.body.set_num, req.body);
+      res.redirect('/lego/sets');
+    } catch (err) {
+      res.render('500', {
+        message: `I'm sorry, but we have encountered the following error: ${err}`,
+      });
+    }
+  }
+);
+app.get(
+  '/lego/deleteSet/:num',
+  ensureLogin,
+  express.urlencoded({ extended: true }),
+  async (req, res) => {
+    try {
+      await legoData.deleteSet(req.params.num);
+      res.redirect('/lego/sets');
+    } catch (err) {
+      res.render('500', {
+        message: `I'm sorry, but we have encountered the following error: ${err}`,
+      });
+    }
+  }
+);
+app.get('/lego/sets', async (req, res) => {
   try {
     if (req.query.theme) {
-      let sets = await legoData.getSetsByTheme(req.query.theme);
-      if (sets.length === 0) {
-        res.status(404).render("404", { message: "No sets found for the specified theme" });
-      } else {
-        res.render("sets", { sets, theme: req.query.theme });
-      }
+      const allSets = await legoData.getSetsByTheme(req.query.theme);
+      res.render('sets', { allSets: allSets });
     } else {
-      let sets = await legoData.getAllSets();
-      if (sets.length === 0) {
-        res.status(404).render("404", { message: "No sets found" });
-      } else {
-        res.render("sets", { sets, theme: "All Sets" });
-      }
+      const allSets = await legoData.getAllSets();
+      res.render('sets', { allSets: allSets });
     }
   } catch (err) {
-    // Handle errors consistently
-    console.error("Error handling Lego sets route:", err);
-    res.status(500).render("500", {
-      message: "Internal Server Error",
-    });
+    res
+      .status(404)
+      .render('404', { message: 'No Sets found for a matching theme' });
   }
 });
-
-// Individual Lego set route
-app.get("/lego/sets/:num", async (req, res) => {
+app.get('/lego/sets/:id', async (req, res) => {
   try {
-    let set = await legoData.getSetByNum(req.params.num);
-    if (!set) {
-      res.status(404).render("404", { message: "No set found for the specified set number" });
-    } else {
-      res.render("set", { set });
-    }
+    const idSets = await legoData.getSetByNum(req.params.id);
+    res.render('set', { set: idSets });
   } catch (err) {
-    // Handle errors consistently
-    console.error("Error handling individual Lego set route:", err);
-    res.status(500).render("500", {
-      message: "Internal Server Error",
-    });
+    console.log(err);
+    res
+      .status(404)
+      .render('404', { message: 'No Sets found for a specific set num' });
   }
 });
-
-
-// New route to render the "Add Set" page
-app.get('/lego/addSet', async (req, res) => {
-  try {
-    // Fetch themes and render the "addSet" view
-    const themes = await legoData.getAllThemes();
-    res.render("addSet", { themes });
-  } catch (err) {
-    // If an error occurs, render the "500" view
-    res.render("500", { message: `Error fetching themes: ${err.message}` });
-  }
+app.use((req, res) => {
+  res.status(404).render('404', {
+    message: 'No view matched for a specific route',
+  });
 });
-
-// New route to handle form submission and add a new set
-app.get('/lego/addSet', async (req, res) => {
-  try {
-    // Assuming you have an asynchronous function to get themes
-    const themes = await legoData.getAllThemes();
-
-    // Render the addSet view with the themes
-    res.render('addSet', { themes });
-  } catch (error) {
-    // Handle errors, for example, render a 500 page with an error message
-    res.status(500).render('500', { message: `Error: ${error.message}` });
-  }
-});
-
-
-app.get('/lego/editSet/:num', (req, res) => {
-  const setNum = req.params.num;   
-  Promise.all([
-    legoData.getSetByNum(setNum),
-    legoData.getAllThemes()
-  ])
-    .then(([set, themeData]) => {
-      if (set && themeData) {
-        res.render("editSet", { themes: themeData, set: set });
-      } else {
-        res.status(404).render("404", { message: "I'm sorry, we're unable to find the requested set or themes" });
-      }
+const startServer = () => {
+  legoData
+    .initialize()
+    .then(authData.initialize)
+    .then(() => {
+      app.listen(HTTP_PORT, () => {
+        console.log(`app listening on:  ${HTTP_PORT}`);
+      });
     })
     .catch((err) => {
-      res.status(404).render("404", { message: err });
+      console.log(`unable to start server: ${err}`);
     });
-});
+};
+startServer();
 
-app.post('/lego/editSet', (req, res) => {
-  const setNum = req.body.set_num;
-  const setData = req.body;   
-  legoData.editSet(setNum, setData)
-    .then(() => {
-      res.redirect('/lego/sets');
-    })
-    .catch((err) => {
-      res.render("500", { message: `I'm sorry, but we have encountered the following error: ${err}` });
-    });
-});
-
-app.get('/lego/deleteSet/:num', (req, res) => {
-  const setNum = req.params.num;  
-  legoData.deleteSet(setNum)
-    .then(() => {
-      res.redirect('/lego/sets');
-    })
-    .catch((error) => {
-      res.render('500', { message: `I'm sorry, but we have encountered the following error: ${error}` });
-    });
-});
