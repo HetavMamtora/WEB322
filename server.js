@@ -6,9 +6,10 @@
  *
  * https://www.senecacollege.ca/about/policies/academic-integrity-policy.html*
  *
- * Name: Marcus Brown Student ID: 127900223 Date: 2023-12-10
+ * Name: Hetav Manojkumar Mamtora Student ID:172913212  Date: 2023-12-10
  *
- * Published URL: https://ruby-wide-eyed-goshawk.cyclic.app/
+ * Published URL: https://thelegoshopofseneca.cyclic.app/
+ *                https://tender-sneakers-calf.cyclic.app/
  *
  **********************************************************************************/
 const authData = require('./modules/auth-service');
@@ -44,13 +45,7 @@ function ensureLogin(req, res, next) {
     next();
   }
 }
-// app.get('/session-test-add', (req, res) => {
-//   req.session.message = req.query.message || ''; // add a "message" property to the session
-//   res.send("session created with using 'message' query parameter");
-// });
-// app.get('/session-test-read', (req, res) => {
-//   res.send(`session message: ${req.session.message}`); // read the "message" property from the session
-// });
+
 app.get('/', (req, res) => {
   res.render('home');
 });
@@ -235,78 +230,3 @@ const startServer = () => {
 };
 startServer();
 
-// const Sequelize = require('sequelize');
-
-// // set up sequelize to point to our postgres database
-// const sequelize = new Sequelize('LegoDB', 'MarcusB71', 'ah7p4KlCQWRb', {
-//   host: 'ep-royal-breeze-51150742-pooler.us-east-2.aws.neon.tech',
-//   dialect: 'postgres',
-//   port: 5432,
-//   dialectOptions: {
-//     ssl: { rejectUnauthorized: false },
-//   },
-// });
-
-// // Define a "Project" model
-// const Project = sequelize.define(
-//   'Project',
-//   {
-//     project_id: {
-//       type: Sequelize.INTEGER,
-//       primaryKey: true, // use "project_id" as a primary key
-//       autoIncrement: true, // automatically increment the value
-//     },
-//     title: Sequelize.STRING,
-//     description: Sequelize.TEXT,
-//   },
-//   {
-//     createdAt: false, // disable createdAt
-//     updatedAt: false, // disable updatedAt
-//   }
-// );
-// Define our "User" and "Task" models
-
-// const User = sequelize.define('User', {
-//   fullName: Sequelize.STRING, // the user's full name (ie: "Jason Bourne")
-//   title: Sequelize.STRING, // the user's title within the project (ie, developer)
-// });
-
-// const Task = sequelize.define('Task', {
-//   title: Sequelize.STRING, // title of the task
-//   description: Sequelize.TEXT, // main text for the task
-// });
-
-// // Associate Tasks with user & automatically create a foreign key
-// // relationship on "Task" via an automatically generated "UserId" field
-
-// User.hasMany(Task);
-// // synchronize the Database with our models and automatically add the
-// // table if it does not exist
-
-// sequelize.sync().then(() => {
-//   // Create user "Jason Bourne"
-//   User.create({
-//     fullName: 'Jason Bourne',
-//     title: 'developer',
-//   }).then((user) => {
-//     console.log('user created');
-
-//     // Create "Task 1" for the new user
-//     Task.create({
-//       title: 'Task 1',
-//       description: 'Task 1 description',
-//       UserId: user.id, // set the correct Userid foreign key
-//     }).then(() => {
-//       console.log('Task 1 created');
-//     });
-
-//     // Create "Task 2" for the new user
-//     Task.create({
-//       title: 'Task 2',
-//       description: 'Task 2 description',
-//       UserId: user.id, // set the correct Userid foreign key
-//     }).then(() => {
-//       console.log('Task 2 created');
-//     });
-//   });
-// });
