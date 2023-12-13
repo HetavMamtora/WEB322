@@ -2,3 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+/* main.css */
+
+/* Apply a common style to input fields */
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+  }
+  
+  /* Style the form container */
+  form {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  /* Style the form labels */
+  label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  /* Style the submit button */
+  input[type="submit"] {
+    background-color: #4caf50;
+    color: white;
+    cursor: pointer;
+  }
+  
+  /* Style error and success messages */
+  .alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #4caf50;
+    color: #4caf50;
+    background-color: #dff0d8;
+  }
+  
+  .alert-error {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #d9534f;
+    color: #d9534f;
+    background-color: #f2dede;
+  }
+  
